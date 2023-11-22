@@ -1,108 +1,28 @@
+# vagrant-ansible-kubernetes
+Combination of Vagrant and Ansible to spin up a Kubernetes cluster
 
-# Vagrantfile and Scripts to Automate Kubernetes Setup using Kubeadm [Practice Environment for CKA/CKAD and CKS Exams]
+### Prerequisites
+- Vagrant
+- Ansible
 
-## Documentation
-
-Current k8s version for CKA, CKAD, and CKS exam: 1.27
-
-Refer to this link for documentation: https://devopscube.com/kubernetes-cluster-vagrant/
-
-## CKA, CKAD, CKS, or KCNA Coupon Codes
-
-🚀  CKA, CKAD, CKS, or KCNA exam aspirants can **save $80** today using code **DCUBE20** at https://kube.promo/devops. It is a limited-time offer from Linux Foundation.
-
-For the best savings, opt for the CKA + CKS bundle (**$210 Savings)**. Use code **DCUBE20** at https://kube.promo/bundle
-
-Also Check the [Linux Foundation Coupon]( https://scriptcrunch.com/linux-foundation-coupon/) page to get the latest coupons.
-
->Note: You have one year of validity to appear for the certification exam after registration
-
-## Prerequisites
-
-1. Working Vagrant setup
-2. 8 Gig + RAM workstation as the Vms use 3 vCPUS and 4+ GB RAM
-
-## For MAC/Linux Users
-
-The latest version of Virtualbox for Mac/Linux can cause issues.
-
-Create/edit the /etc/vbox/networks.conf file and add the following to avoid any network-related issues.
-<pre>* 0.0.0.0/0 ::/0</pre>
-
-or run below commands
-
-```shell
-sudo mkdir -p /etc/vbox/
-echo "* 0.0.0.0/0 ::/0" | sudo tee -a /etc/vbox/networks.conf
+### Define amount of nodes
+in Vagrantfile:
+```
+N = 2
 ```
 
-So that the host only networks can be in any range, not just 192.168.56.0/21 as described here:
-https://discuss.hashicorp.com/t/vagrant-2-2-18-osx-11-6-cannot-create-private-network/30984/23
 
-## Bring Up the Cluster
-
-To provision the cluster, execute the following commands.
-
-```shell
-git clone https://github.com/scriptcamp/vagrant-kubeadm-kubernetes.git
-cd vagrant-kubeadm-kubernetes
-vagrant up
+### Spin up cluster
 ```
-## Set Kubeconfig file variable
-
-```shell
-cd vagrant-kubeadm-kubernetes
-cd configs
-export KUBECONFIG=$(pwd)/config
+$ vagrant up
 ```
 
-or you can copy the config file to .kube directory.
-
-```shell
-cp config ~/.kube/
+### Verify on master
 ```
-
-## Install Kubernetes Dashboard
-
-The dashboard is automatically installed by default, but it can be skipped by commenting out the dashboard version in _settings.yaml_ before running `vagrant up`.
-
-If you skip the dashboard installation, you can deploy it later by enabling it in _settings.yaml_ and running the following:
-```shell
-vagrant ssh -c "/vagrant/scripts/dashboard.sh" master
+$ vagrant ssh k8s-master
+$ kubectl get nodes
+NAME         STATUS   ROLES                  AGE     VERSION
+k8s-master   Ready    control-plane,master   5m6s    v1.23.0
+node-1       Ready    <none>                 2m59s   v1.23.0
+node-2       Ready    <none>                 68s     v1.23.0
 ```
-
-## Kubernetes Dashboard Access
-
-To get the login token, copy it from _config/token_ or run the following command:
-```shell
-kubectl -n kubernetes-dashboard get secret/admin-user -o go-template="{{.data.token | base64decode}}"
-```
-
-Proxy the dashboard:
-```shell
-kubectl proxy
-```
-
-Open the site in your browser:
-```shell
-http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/#/overview?namespace=kubernetes-dashboard
-```
-
-## To shutdown the cluster,
-
-```shell
-vagrant halt
-```
-
-## To restart the cluster,
-
-```shell
-vagrant up
-```
-
-## To destroy the cluster,
-
-```shell
-vagrant destroy -f
-```
-
